@@ -8,17 +8,12 @@ metadata:
 spec:
   template:
     spec:
-      serviceAccountName: patcher-sa
       containers:
-        - name: patcher
+        - name: drift-generator
           image: bitnami/kubectl:latest
           command:
             - /bin/sh
             - -c
             - |
-              echo "Waiting for deployment to be ready..."
-              kubectl rollout status deployment out-of-sync-app -n default
-              echo "Patching deployment to force drift..."
-              kubectl patch deployment out-of-sync-app \
-                -p '{"spec":{"template":{"metadata":{"annotations":{"drift":"forced-'"$(date +%s)"'"}}}}}'
-      restartPolicy: OnFailure
+              kubectl create configmap drift-$(date +%s) --from-literal=drift=1 || true
+      restartPolicy: Never
