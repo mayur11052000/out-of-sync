@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: out-of-sync-post-sync
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  template:
+    spec:
+      containers:
+        - name: patcher
+          image: bitnami/kubectl:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Patching deployment to force drift..."
+              kubectl patch deployment out-of-sync-app \
+                -p '{"spec":{"template":{"metadata":{"annotations":{"drift":"forced-$(date +%s)"}}}}}'
+      restartPolicy: Never
