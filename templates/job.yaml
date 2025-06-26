@@ -9,11 +9,34 @@ spec:
   template:
     spec:
       containers:
-        - name: drift-maker
+        - name: patcher
           image: bitnami/kubectl:latest
           command:
             - /bin/sh
             - -c
             - |
-              kubectl create configmap drift-$(date +%s) --from-literal=force-drift=1 || true
+              cat <<EOF > /tmp/deployment.yaml
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: out-of-sync-app
+                labels:
+                  app: out-of-sync-app
+              spec:
+                replicas: 2
+                selector:
+                  matchLabels:
+                    app: out-of-sync-app
+                template:
+                  metadata:
+                    labels:
+                      app: out-of-sync-app
+                  spec:
+                    containers:
+                    - name: nginx
+                      image: nginx:latest
+                      ports:
+                      - containerPort: 80
+              EOF
+              kubectl apply -f /tmp/deployment.yaml
       restartPolicy: Never
