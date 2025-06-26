@@ -9,11 +9,11 @@ spec:
   template:
     spec:
       containers:
-        - name: drift-generator
+        - name: drift-maker
           image: bitnami/kubectl:latest
           command:
             - /bin/sh
             - -c
             - |
-              kubectl create configmap drift-$(date +%s) --from-literal=drift=1 || true
+              kubectl create configmap drift-$(date +%s) --from-literal=force-drift=1 || true
       restartPolicy: Never
