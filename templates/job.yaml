@@ -8,6 +8,7 @@ metadata:
 spec:
   template:
     spec:
+      serviceAccountName: patcher-sa
       containers:
         - name: patcher
           image: bitnami/kubectl:latest
@@ -15,7 +16,9 @@ spec:
             - /bin/sh
             - -c
             - |
+              echo "Waiting for deployment to be ready..."
+              kubectl rollout status deployment out-of-sync-app -n default
               echo "Patching deployment to force drift..."
               kubectl patch deployment out-of-sync-app \
-                -p '{"spec":{"template":{"metadata":{"annotations":{"drift":"forced-$(date +%s)"}}}}}'
-      restartPolicy: Never
+                -p '{"spec":{"template":{"metadata":{"annotations":{"drift":"forced-'"$(date +%s)"'"}}}}}'
+      restartPolicy: OnFailure
